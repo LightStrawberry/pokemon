@@ -1,0 +1,33 @@
+{
+  "pages": [
+    "pages/index",
+    "pages/counter",
+    "pages/about",
+    "pages/pokemon"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "backgroundColor": "#EA5A49",
+    "navigationBarBackgroundColor": "#EA5A49",
+    "backgroundColorBottom": "#ffffff",
+    "navigationBarTextStyle": "light",
+    "navigationBarTitleText": "POKEMON"
+  },
+  "tabBar": {
+    "selectedColor": "#EA5A49",
+    "list": [
+      {
+        "pagePath": "pages/index",
+        "text": "POKEMON",
+        "iconPath": "/static/home.png",
+        "selectedIconPath": "/static/home-a.png"
+      },
+      {
+        "pagePath": "pages/about",
+        "text": "关于",
+        "iconPath": "/static/about.png",
+        "selectedIconPath": "/static/about-a.png"
+      }
+    ]
+  }
+}
