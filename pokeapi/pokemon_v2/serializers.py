@@ -298,7 +298,7 @@ class PokemonSummarySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Pokemon
-        fields = ('name', 'url', 'sprites')
+        fields = ('name', 'id', 'sprites')
 
     def get_pokemon_sprites(self, obj):
 
@@ -317,7 +317,7 @@ class PokemonSpeciesSummarySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = PokemonSpecies
-        fields = ('name', 'url')
+        fields = ('id', 'name', 'url')
 
 
 class PokemonFormSummarySerializer(serializers.HyperlinkedModelSerializer):
@@ -2744,7 +2744,7 @@ class PokemonSpeciesDetailSerializer(serializers.ModelSerializer):
     shape = PokemonShapeSummarySerializer(source="pokemon_shape")
     evolves_from_species = PokemonSpeciesSummarySerializer()
     varieties = serializers.SerializerMethodField('get_pokemon_varieties')
-    evolution_chain = EvolutionChainSummarySerializer()
+    evolution_chain = serializers.SerializerMethodField('get_pokemon_evolution_chain')
     pal_park_encounters = serializers.SerializerMethodField('get_encounters')
 
     class Meta:
@@ -2841,6 +2841,53 @@ class PokemonSpeciesDetailSerializer(serializers.ModelSerializer):
             encounters.append(encounter)
 
         return encounters
+
+    def get_pokemon_evolution_chain(self, obj):
+        chain_id = obj.evolution_chain_id
+
+        pokemon_objects = PokemonSpecies.objects.filter(
+            evolution_chain_id=chain_id).order_by('order')
+        summary_data = PokemonSpeciesSummarySerializer(
+            pokemon_objects, many=True, context=self.context).data
+        ref_data = PokemonSpeciesEvolutionSerializer(
+            pokemon_objects, many=True, context=self.context).data
+
+        chain = entry = OrderedDict()
+        current_evolutions = None
+        evolution_data = None
+        previous_entry = None
+        previous_species = None
+
+        for index, species in enumerate(ref_data):
+
+            # If evolves from something
+            if species['evolves_from_species']:
+
+                # In case this pokemon is one of multiple evolutions a pokemon can make
+                if previous_species:
+                    if previous_species['id'] == species['evolves_from_species']:
+                        current_evolutions = previous_entry['evolves_to']
+
+                entry = OrderedDict()
+
+                evolution_object = PokemonEvolution.objects.filter(
+                    evolved_species=species['id'])
+
+                evolution_data = PokemonEvolutionSerializer(
+                    evolution_object, many=True, context=self.context).data
+
+                current_evolutions.append(entry)
+
+            entry['is_baby'] = species['is_baby']
+            entry['species'] = summary_data[index]
+            entry['evolution_details'] = evolution_data or []
+            entry['evolves_to'] = []
+
+            # Keep track of previous entries for complex chaining
+            previous_entry = entry
+            previous_species = species
+
+        return chain
 
 
 class PokemonEvolutionSerializer(serializers.ModelSerializer):

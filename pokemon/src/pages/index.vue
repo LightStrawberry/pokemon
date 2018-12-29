@@ -2,14 +2,11 @@
   <div class="container" @click="clickHandle('test click', $event)">
     <div class="pokemons">
       <ul>
-        <li v-for="(item, id) in pokemons" :key="id" :data-id="id" :id="item.id" class="pokemon" @click="router.push('/pokemon')">
+        <li v-for="(item, id) in pokemons" :key="id" :data-id="id" :id="item.id" class="pokemon" @click="todetail(item.id)">
           <img :src='item.sprites' class="pokemon-img">
           <p class="pokemon-name">{{ item.name }}</p>
         </li>
       </ul>
-    </div>
-    <div>
-      <div @click="getData()">获取数据</div>
     </div>
     <!-- <a href="/pages/counter" class="counter">去往Vuex示例页面</a> -->
   </div>
@@ -26,7 +23,6 @@ export default {
     return {
       motto: 'Hello World',
       userInfo: {},
-      todos: ['吃饭', '睡觉', '学习'],
       pokemons: {}
     }
   },
@@ -39,6 +35,14 @@ export default {
     bindViewTap () {
       const url = '/packageA/logs'
       this.$router.push(url)
+    },
+    todetail (id) {
+      console.log(111)
+      console.log(id)
+      const url = '/pages/pokemon?id=' + id
+      this.$router.push(url)
+      // wx.switchTab({url: '/pages/pokemon'})
+      console.log(333)
     },
     getData () {
       console.log(444)
